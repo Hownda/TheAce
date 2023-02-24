@@ -675,9 +675,11 @@ GameObject:
   - component: {fileID: 6376911348337571212}
   - component: {fileID: 1166580425425564098}
   - component: {fileID: 4003229029980969044}
+  - component: {fileID: 3237886005681775715}
+  - component: {fileID: -1904912572634067211}
   m_Layer: 0
   m_Name: shark
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -690,7 +692,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4959762711335100890}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -760,8 +762,9 @@ MonoBehaviour:
   gravity: -30
   groundMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 9
   isGrounded: 0
+  groundOffset: 1.36
   smoothInputSpeed: 0.1
 --- !u!114 &1166580425425564098
 MonoBehaviour:
@@ -804,13 +807,37 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 2.1
+  m_Height: 1.98
   m_Radius: 0.29
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: -0.27, z: 0}
+  m_Center: {x: 0, y: -0.28, z: 0}
+--- !u!114 &3237886005681775715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4959762711335100890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0213255cf6ce83640972a623bbfa6ff9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-1904912572634067211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4959762711335100890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e816bf2bdb7bfd240a80ef42999475ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5311320644579411302
 GameObject:
   m_ObjectHideFlags: 0

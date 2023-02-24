@@ -30,6 +30,9 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField]
     private bool isGrounded = false;
 
+    [SerializeField]
+    private float groundOffset;
+
     Vector3 verticalVelocity = Vector3.zero;
 
     private Vector3 currentInputVector;
@@ -65,7 +68,8 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (IsOwner && IsClient)
         {
-            isGrounded = Physics.CheckSphere(transform.position, 0.1f, groundMask);
+            isGrounded = Physics.Raycast(transform.position, -transform.up, groundOffset, groundMask);
+            Debug.DrawRay(transform.position, -transform.up);
             if (isGrounded)
             {
                 verticalVelocity.y = 0;
