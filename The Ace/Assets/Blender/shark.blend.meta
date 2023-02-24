@@ -14,6 +14,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: BrownPants
     second: {fileID: 2100000, guid: 65f055275ef191e4f9a8682c41fa28a4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SharkFin
+    second: {fileID: 2100000, guid: 51fb3dcae59e1f246abc398115675bbe, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
