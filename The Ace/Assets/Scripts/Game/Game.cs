@@ -19,7 +19,9 @@ public class Game : NetworkBehaviour
     public Vector3 team2ServeLocation = new Vector3(3.8f, 1.1f, -9);
 
     [Header("Physics")]
-    private int throwUpForce = 350;
+    public int throwUpForce = 350;
+    public float serveVerticalForce = 20;
+    public float serveHorizontalForce = 13;
 
     private void Awake()
     {
@@ -42,12 +44,26 @@ public class Game : NetworkBehaviour
         ball.GetComponent<Rigidbody>().useGravity = false;
     }
 
-    [ServerRpc] public void SetThrownUpServerRpc(bool thrownUpValue)
+    [ServerRpc(RequireOwnership = false)] public void ResetBallServerRpc()
+    {
+        ResetBallClientRpc();
+        thrownUp.Value = false;
+        ballServed.Value = false;
+    }
+
+    [ClientRpc] private void ResetBallClientRpc()
+    {
+        Destroy(ball);
+        SpawnBall();
+        
+    }
+
+    [ServerRpc(RequireOwnership = false)] public void SetThrownUpServerRpc(bool thrownUpValue)
     {
         thrownUp.Value = thrownUpValue;
     }
 
-    [ServerRpc] public void SetBallServedServerRpc(bool ballServedValue)
+    [ServerRpc(RequireOwnership = false)] public void SetBallServedServerRpc(bool ballServedValue)
     {
         ballServed.Value = ballServedValue;
     }
@@ -59,11 +75,13 @@ public class Game : NetworkBehaviour
         ball.GetComponent<Rigidbody>().AddForce(new Vector3(0, throwUpForce, 0));
     }
 
-    public void Serve()
+    public void Serve(Quaternion playerRotation, Quaternion cameraRotation)
     {
+        Vector3 playerRotationDirection = playerRotation * Vector3.forward;
+        Vector3 cameraRotationDirection = cameraRotation * Vector3.up;
+        Vector3 addedForce = playerRotationDirection * serveHorizontalForce + serveVerticalForce * cameraRotationDirection * -cameraRotation.x;
 
+        ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        ball.GetComponent<Rigidbody>().AddForce(addedForce, ForceMode.Impulse);              
     }
-
-
-
 }
