@@ -229,15 +229,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             newPlayerItem.SetPlayerInfo(player.Value);
             newPlayerItem.transform.SetParent(parents[newPlayerItem.GetComponent<PlayerItem>().currentParentIndex]);
 
-            if (newPlayerItem.GetComponent<PlayerItem>().currentParentIndex == 1)
+            if (newPlayerItem.GetComponent<PlayerItem>().currentParentIndex == 0)
             {
                 team1List.Add(newPlayerItem);
             }
-            if (newPlayerItem.GetComponent<PlayerItem>().currentParentIndex == 2)
+            if (newPlayerItem.GetComponent<PlayerItem>().currentParentIndex == 1)
             {
                 team2List.Add(newPlayerItem);
             }
-            if (newPlayerItem.GetComponent<PlayerItem>().currentParentIndex == 0)
+            if (newPlayerItem.GetComponent<PlayerItem>().currentParentIndex == 2)
             {
                 unassignedList.Add(newPlayerItem);
             }

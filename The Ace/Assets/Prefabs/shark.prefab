@@ -826,6 +826,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0213255cf6ce83640972a623bbfa6ff9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  teamIndex:
+    m_InternalValue: 0
 --- !u!114 &-1904912572634067211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -838,6 +840,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e816bf2bdb7bfd240a80ef42999475ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  receiveHeight: -0.06
 --- !u!1 &5311320644579411302
 GameObject:
   m_ObjectHideFlags: 0

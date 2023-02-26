@@ -2,18 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Photon.Pun;
 
 public class PlayerDictionary : NetworkBehaviour
 {
     public Dictionary<ulong, GameObject> playerDictionary = new Dictionary<ulong, GameObject>();
     public int dictionaryCount = 0;
-    public int playersInRoom = 2;
+    public int playersInRoom;
 
     public static PlayerDictionary instance;
 
     private void Start()
     {
         instance = this;
+        playersInRoom = PhotonNetwork.CurrentRoom.PlayerCount;
     }
 
     [ServerRpc]
@@ -30,7 +32,6 @@ public class PlayerDictionary : NetworkBehaviour
         foreach (GameObject player in players)
         {
             playerDictionary.Add(player.GetComponent<NetworkObject>().OwnerClientId, player);
-            Debug.Log(playerDictionary.Count);
         }
         if (playerDictionary.Count == playersInRoom && IsServer)
         {

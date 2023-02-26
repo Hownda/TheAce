@@ -37,19 +37,19 @@ public class PlayerItem : MonoBehaviourPunCallbacks
 
     public void OnClickUnassigned()
     {
-        playerProperties["team"] = 0;
+        playerProperties["team"] = 2;
         PhotonNetwork.SetPlayerCustomProperties(playerProperties);
     }
 
     public void OnClickTeam1()
     {
-        playerProperties["team"] = 1;
+        playerProperties["team"] = 0;
         PhotonNetwork.SetPlayerCustomProperties(playerProperties);
     }
 
     public void OnClickTeam2()
     {
-        playerProperties["team"] = 2;
+        playerProperties["team"] = 1;
         PhotonNetwork.SetPlayerCustomProperties(playerProperties);
     }
 

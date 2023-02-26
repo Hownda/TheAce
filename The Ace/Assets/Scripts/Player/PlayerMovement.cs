@@ -28,7 +28,7 @@ public class PlayerMovement : NetworkBehaviour
     LayerMask groundMask;
 
     [SerializeField]
-    private bool isGrounded = false;
+    public bool isGrounded = false;
 
     [SerializeField]
     private float groundOffset;

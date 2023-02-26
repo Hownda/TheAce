@@ -283,9 +283,9 @@ MonoBehaviour:
     type: 3}
   unassignedItemParent: {fileID: 1798153052803156847}
   parents:
-  - {fileID: 1798153052803156847}
   - {fileID: 1798153052815286775}
   - {fileID: 1798153053297890303}
+  - {fileID: 1798153052803156847}
   playButton: {fileID: 1798153053189573546}
   errorContainer: {fileID: 1798153053201867003}
   errorMessage: {fileID: 1798153053851519609}
@@ -2575,7 +2575,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 725560217}
         m_TargetAssemblyTypeName: LobbyManager, Assembly-CSharp
         m_MethodName: OnClickStartGame
         m_Mode: 1

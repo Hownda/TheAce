@@ -2,17 +2,37 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Photon.Pun;
 
 public class Game : NetworkBehaviour
 {
     public GameObject ballPrefab;
     public static Game instance;
 
-    private GameObject ball;
+    [HideInInspector] public GameObject ball;
 
     [Header("Conditions")]
     public NetworkVariable<bool> thrownUp = new NetworkVariable<bool>(false);
     public NetworkVariable<bool> ballServed = new NetworkVariable<bool>(false);
+    public NetworkVariable<bool> validPoint = new NetworkVariable<bool>(true);
+    public NetworkVariable<int> teamToServe = new NetworkVariable<int>(0);
+    public NetworkVariable<ulong> playerToServe = new NetworkVariable<ulong>();
+    public NetworkVariable<int> canReceive = new NetworkVariable<int>(1);
+
+    public NetworkVariable<int> scoreTeam1 = new NetworkVariable<int>(0);
+    public NetworkVariable<int> scoreTeam2 = new NetworkVariable<int>(0);
+
+    private NetworkVariable<ulong> team1LastPlayerToServe = new NetworkVariable<ulong>(2);
+    private NetworkVariable<ulong> team2LastPlayerToServe = new NetworkVariable<ulong>(2);
+    private NetworkVariable<int> lastTeamToServe = new NetworkVariable<int>(0);
+    private NetworkVariable<ulong> playerLastTouch = new NetworkVariable<ulong>();
+    private NetworkVariable<int> teamLastTouch = new NetworkVariable<int>();
+
+    private List<ulong> team1 = new List<ulong>();
+    private List<ulong> team2 = new List<ulong>();
+
+    public Vector3[] spawnLocations;
+    public Vector3[] spawnRotations;
 
     [Header("Volleyball Spawn Locations")]
     public Vector3 team1ServeLocation = new Vector3(-3.8f, 1.1f, 9);
@@ -22,11 +42,27 @@ public class Game : NetworkBehaviour
     public int throwUpForce = 350;
     public float serveVerticalForce = 20;
     public float serveHorizontalForce = 13;
+    public float receiveForce = 2;
+    public float receiveForceUp = 9.5f;
+
 
     private void Awake()
     {
         instance = this;
     }
+
+    private void Update()
+    {
+        if (ball.transform.position.y >= 0.84 && ball.transform.position.z > 0 && teamLastTouch.Value == 0 && ballServed.Value == true)
+        {
+            canReceive.Value = 1;
+        }
+        else if (ball.transform.position.y >= 0.84 && ball.transform.position.z < 0 && teamLastTouch.Value == 1 && ballServed.Value == true)
+        {
+            canReceive.Value = 0;
+        }
+    }
+
     [ServerRpc] public void StartGameServerRpc()
     {
         StartGameClientRpc();
@@ -35,11 +71,40 @@ public class Game : NetworkBehaviour
     [ClientRpc] private void StartGameClientRpc()
     {
         SpawnBall();
+        StartCoroutine(SyncPlayerTeams());
+        
+    }
+
+    private IEnumerator SyncPlayerTeams()
+    {
+        yield return new WaitForSeconds(1);
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject player in players)
+        {
+            if (player.GetComponent<PlayerNetwork>().teamIndex.Value == 0)
+            {
+                team1.Add(player.GetComponent<NetworkObject>().OwnerClientId);
+            }
+            else
+            {
+                team2.Add(player.GetComponent<NetworkObject>().OwnerClientId);
+            }
+        }
+        StartCoroutine(prepareServeDelay());
     }
 
     private void SpawnBall()
     {
-        ball = Instantiate(ballPrefab, team1ServeLocation, Quaternion.Euler(Vector3.zero));
+        Vector3 spawnPoint;
+        if (teamToServe.Value == 0)
+        {
+            spawnPoint = team2ServeLocation;
+        }
+        else
+        {
+            spawnPoint = team1ServeLocation;
+        }
+        ball = Instantiate(ballPrefab, spawnPoint, Quaternion.Euler(Vector3.zero));
         ball.GetComponent<Rigidbody>().isKinematic = true;
         ball.GetComponent<Rigidbody>().useGravity = false;
     }
@@ -58,6 +123,40 @@ public class Game : NetworkBehaviour
         
     }
 
+    [ServerRpc] public void ScoreServerRpc(int teamIndex)
+    {
+        if (validPoint.Value == false)
+        {
+            return;
+        }
+        else
+        {
+            validPoint.Value = false;
+
+            if (teamIndex == 0)
+            {
+                teamToServe.Value = 0;
+                Debug.Log("Team 1 scored");
+                scoreTeam1.Value += 1;
+            }
+            else
+            {
+                teamToServe.Value = 1;
+                Debug.Log("Team 2 scored");
+                scoreTeam2.Value += 1;
+            }
+            StartCoroutine(ballResetDelay());
+        }       
+    }
+
+    private IEnumerator ballResetDelay()
+    {
+        UpdatePlayerToServeServerRpc();
+        yield return new WaitForSeconds(1);
+        ResetBallServerRpc();
+        
+    }
+
     [ServerRpc(RequireOwnership = false)] public void SetThrownUpServerRpc(bool thrownUpValue)
     {
         thrownUp.Value = thrownUpValue;
@@ -67,6 +166,24 @@ public class Game : NetworkBehaviour
     {
         ballServed.Value = ballServedValue;
     }
+
+    [ServerRpc(RequireOwnership = false)] public void SetValidPointServerRpc(bool validPointValue)
+    {
+        validPoint.Value = validPointValue;
+    }
+
+    [ServerRpc(RequireOwnership = false)] public void SetLastTouchServerRpc(ulong clientId)
+    {
+        playerLastTouch.Value = clientId;
+        if (team1.Contains(clientId))
+        {
+            teamLastTouch.Value = 0;
+        }
+        else if (team2.Contains(clientId))
+        {
+            teamLastTouch.Value = 1;
+        }
+    }    
 
     public void ThrowUp()
     {
@@ -84,4 +201,249 @@ public class Game : NetworkBehaviour
         ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
         ball.GetComponent<Rigidbody>().AddForce(addedForce, ForceMode.Impulse);              
     }
+
+    public void ReceiveHigh(Quaternion playerRotation, Quaternion cameraRotation)
+    {
+        Serve(playerRotation, cameraRotation);     
+    }
+
+    public void ReceiveLow(Quaternion playerRotation, Quaternion cameraRotation)
+    {
+
+        Vector3 playerRotationDirection = playerRotation * Vector3.forward;
+        Vector3 cameraRotationDirection = cameraRotation * Vector3.up;
+        Vector3 forceToAdd = playerRotationDirection * receiveForce + receiveForceUp * Vector3.up;
+
+        ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        ball.GetComponent<Rigidbody>().AddForce(forceToAdd, ForceMode.Impulse);
+    }
+
+    #region
+    [ServerRpc]
+    public void UpdatePlayerToServeServerRpc()
+    {
+
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        {
+            if (teamToServe.Value == 0)
+            {
+                playerToServe.Value = team1[0];
+            }
+            else
+            {
+                playerToServe.Value = team2[0];
+            }
+        }
+
+        else if (PhotonNetwork.CurrentRoom.PlayerCount >= 3)
+        {
+            if (teamToServe.Value == 0)
+            {
+                if (team1.Count < 2)
+                {
+                    playerToServe.Value = team1[0];
+                }
+
+                else if (team1.Count == 2 && lastTeamToServe.Value == 1)
+                {
+                    for (int i = 0; i < team1.Count; i++)
+                    {
+                        if (team1LastPlayerToServe.Value == team1[i])
+                        {
+                            if (i == 1)
+                            {
+                                playerToServe.Value = team1[0];
+                                team1LastPlayerToServe.Value = team1[0];
+                            }
+                            else
+                            {
+                                playerToServe.Value = team1[1];
+                                team1LastPlayerToServe.Value = team1[1];
+                            }
+                        }
+
+                        else
+                        {
+                            playerToServe.Value = team1[0];
+                            team1LastPlayerToServe.Value = team1[0];
+                        }
+                    }
+                }
+                else if (team1.Count == 2 && lastTeamToServe.Value == 0)
+                {
+                    playerToServe.Value = team1LastPlayerToServe.Value;
+                }
+            }
+
+            else if (teamToServe.Value == 1)
+            {
+                if (team2.Count < 2)
+                {
+                    playerToServe.Value = team2[0];
+                }
+
+                else if (team2.Count == 2 && lastTeamToServe.Value == 0)
+                {
+                    for (int i = 0; i < team2.Count; i++)
+                    {
+                        if (team2LastPlayerToServe.Value == team2[i])
+                        {
+                            if (i == 1)
+                            {
+                                playerToServe.Value = team2[0];
+                                team2LastPlayerToServe.Value = team2[0];
+                            }
+                            else if (i == 0)
+                            {
+                                playerToServe.Value = team2[1];
+                                team2LastPlayerToServe.Value = team2[1];
+                            }
+                        }
+
+                        else
+                        {
+                            playerToServe.Value = team2[0];
+                            team2LastPlayerToServe.Value = team2[0];
+                        }
+                    }
+                }
+                else if (team2.Count == 2 && lastTeamToServe.Value == 1)
+                {
+                    playerToServe.Value = team2LastPlayerToServe.Value;
+                }
+            }
+        }
+        lastTeamToServe.Value = teamToServe.Value;
+        StartCoroutine(prepareServeDelay());
+    }
+
+    private IEnumerator prepareServeDelay()
+    {
+        yield return new WaitForSeconds(1);
+        prepareServeServerRpc();
+    }
+
+    [ServerRpc]
+    public void prepareServeServerRpc()
+    {
+        prepareServeClientRpc();
+    }
+
+    [ClientRpc] private void prepareServeClientRpc()
+    {
+        if (teamToServe.Value == 0)
+        {
+            for (int i = 0; i < team1.Count; i++)
+            {
+                if (team1[i] == playerToServe.Value)
+                {
+
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
+                    Vector3 moveVector = spawnLocations[0] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
+                }
+                else
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
+                    Vector3 moveVector = spawnLocations[1] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
+                }
+            }
+            for (int i = 0; i < team2.Count; i++)
+            {
+                if (team2[i] == team2LastPlayerToServe.Value)
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
+                    Vector3 moveVector = spawnLocations[2] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
+                }
+                else if (team2LastPlayerToServe.Value == 2)
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
+                    Vector3 moveVector = spawnLocations[i + 2] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[i + 2]);
+                }
+                else
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
+                    Vector3 moveVector = spawnLocations[3] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
+                }
+            }
+        }
+
+        else if (teamToServe.Value == 1)
+        {
+            for (int i = 0; i < team2.Count; i++)
+            {
+                if (team2[i] == playerToServe.Value)
+                {
+
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
+                    Vector3 moveVector = spawnLocations[2] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
+                }
+                else
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
+                    Vector3 moveVector = spawnLocations[3] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
+                }
+            }
+            for (int i = 0; i < team1.Count; i++)
+            {
+                if (team1[i] == team1LastPlayerToServe.Value)
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
+                    Vector3 moveVector = spawnLocations[0] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
+                }
+                else if (team1LastPlayerToServe.Value == 2)
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
+                    Vector3 moveVector = spawnLocations[i] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[i]);
+                }
+                else
+                {
+                    GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
+                    Vector3 moveVector = spawnLocations[1] - player.transform.position;
+                    player.GetComponent<CharacterController>().detectCollisions = false;
+                    player.GetComponent<CharacterController>().Move(moveVector);
+                    player.GetComponent<CharacterController>().detectCollisions = true;
+                    player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
+                }
+            }
+        }
+    }
+    #endregion
 }
+
+
