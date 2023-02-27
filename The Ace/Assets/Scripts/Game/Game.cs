@@ -26,7 +26,7 @@ public class Game : NetworkBehaviour
     private NetworkVariable<ulong> team2LastPlayerToServe = new NetworkVariable<ulong>(2);
     private NetworkVariable<int> lastTeamToServe = new NetworkVariable<int>(0);
     private NetworkVariable<ulong> playerLastTouch = new NetworkVariable<ulong>();
-    private NetworkVariable<int> teamLastTouch = new NetworkVariable<int>();
+    public NetworkVariable<int> teamLastTouch = new NetworkVariable<int>();
 
     private List<ulong> team1 = new List<ulong>();
     private List<ulong> team2 = new List<ulong>();
@@ -35,8 +35,8 @@ public class Game : NetworkBehaviour
     public Vector3[] spawnRotations;
 
     [Header("Volleyball Spawn Locations")]
-    public Vector3 team1ServeLocation = new Vector3(-3.8f, 1.1f, 9);
-    public Vector3 team2ServeLocation = new Vector3(3.8f, 1.1f, -9);
+    public Vector3 team2ServeLocation = new Vector3(-3.8f, 1.1f, 8.7f);
+    public Vector3 team1ServeLocation = new Vector3(3.8f, 1.1f, -8.7f);
 
     [Header("Physics")]
     public int throwUpForce = 350;
@@ -53,6 +53,10 @@ public class Game : NetworkBehaviour
 
     private void Update()
     {
+        if (ball == null)
+        {
+            return;
+        }
         if (ball.transform.position.y >= 0.84 && ball.transform.position.z > 0 && teamLastTouch.Value == 0 && ballServed.Value == true)
         {
             canReceive.Value = 1;
@@ -60,6 +64,11 @@ public class Game : NetworkBehaviour
         else if (ball.transform.position.y >= 0.84 && ball.transform.position.z < 0 && teamLastTouch.Value == 1 && ballServed.Value == true)
         {
             canReceive.Value = 0;
+        }
+
+        if (team1.Count == 1 && team2.Count == 1)
+        {
+            Debug.Log(team1[0] + " " + team2[0]);
         }
     }
 
@@ -90,6 +99,7 @@ public class Game : NetworkBehaviour
                 team2.Add(player.GetComponent<NetworkObject>().OwnerClientId);
             }
         }
+        UpdatePlayerToServeServerRpc();
         StartCoroutine(prepareServeDelay());
     }
 
@@ -98,15 +108,18 @@ public class Game : NetworkBehaviour
         Vector3 spawnPoint;
         if (teamToServe.Value == 0)
         {
-            spawnPoint = team2ServeLocation;
+            spawnPoint = team1ServeLocation;
+            SetCanReceiveServerRpc(1);
         }
         else
         {
-            spawnPoint = team1ServeLocation;
+            spawnPoint = team2ServeLocation;
+            SetCanReceiveServerRpc(0);
         }
         ball = Instantiate(ballPrefab, spawnPoint, Quaternion.Euler(Vector3.zero));
         ball.GetComponent<Rigidbody>().isKinematic = true;
         ball.GetComponent<Rigidbody>().useGravity = false;
+        
     }
 
     [ServerRpc(RequireOwnership = false)] public void ResetBallServerRpc()
@@ -183,7 +196,12 @@ public class Game : NetworkBehaviour
         {
             teamLastTouch.Value = 1;
         }
-    }    
+    }   
+    
+    [ServerRpc(RequireOwnership = false)] private void SetCanReceiveServerRpc(int canReceiveValue)
+    {
+        canReceive.Value = canReceiveValue;
+    }
 
     public void ThrowUp()
     {

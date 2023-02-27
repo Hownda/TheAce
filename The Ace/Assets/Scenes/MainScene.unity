@@ -643,6 +643,8 @@ MonoBehaviour:
     m_InternalValue: 0
   scoreTeam2:
     m_InternalValue: 0
+  teamLastTouch:
+    m_InternalValue: 0
   spawnLocations:
   - {x: 4, y: 3, z: -9.5}
   - {x: -1, y: 3, z: -5}
@@ -653,8 +655,8 @@ MonoBehaviour:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 180, z: 0}
   - {x: 0, y: 180, z: 0}
-  team1ServeLocation: {x: -3.8, y: -0.2, z: 9}
-  team2ServeLocation: {x: 3.8, y: -0.2, z: -9}
+  team2ServeLocation: {x: -3.8, y: -0.2, z: 8.7}
+  team1ServeLocation: {x: 3.8, y: -0.2, z: -8.7}
   throwUpForce: 350
   serveVerticalForce: 20
   serveHorizontalForce: 13
