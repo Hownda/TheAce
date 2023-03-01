@@ -19,6 +19,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: LightRed
     second: {fileID: 2100000, guid: 1a2b27c6f27ce0b4a94cf31922f24c1b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Net
+    second: {fileID: 2100000, guid: d987e374a28e62d4a95f9578726c309d, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
