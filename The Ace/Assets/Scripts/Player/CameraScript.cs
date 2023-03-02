@@ -20,6 +20,12 @@ public class CameraScript : NetworkBehaviour
         {
             playerCamera.enabled = false;
             playerCamera.GetComponent<AudioListener>().enabled = false;
+            playerCamera.transform.parent.gameObject.layer = 0;
+            MeshRenderer[] renderers = playerCamera.transform.parent.gameObject.GetComponentsInChildren<MeshRenderer>();
+            foreach (MeshRenderer renderer in renderers)
+            {
+                renderer.gameObject.layer = 0;
+            }
         }
     }
 

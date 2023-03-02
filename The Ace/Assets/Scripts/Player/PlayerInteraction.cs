@@ -6,6 +6,7 @@ using Unity.Netcode;
 public class PlayerInteraction : NetworkBehaviour
 {
     public float receiveHeight;
+    [SerializeField] private AudioClip clip;
     private void Update()
     {
         DetectServe();
@@ -37,6 +38,7 @@ public class PlayerInteraction : NetworkBehaviour
                     if (IsOwner)
                     {
                         Game.instance.ThrowUp();
+                        AudioManager.instance.PlaySound(clip);
                         ThrowUpServerRpc();
                     }
                     Game.instance.SetThrownUpServerRpc(true);
@@ -56,6 +58,7 @@ public class PlayerInteraction : NetworkBehaviour
                     {
                         Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                         Game.instance.Serve(transform.rotation, cameraRotation);
+                        AudioManager.instance.PlaySound(clip);
                         ServeServerRpc(transform.rotation, cameraRotation);
                     }
 
@@ -84,6 +87,7 @@ public class PlayerInteraction : NetworkBehaviour
                 {
                     Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                     Game.instance.ReceiveHigh(transform.rotation, cameraRotation);
+                    AudioManager.instance.PlaySound(clip);
                     ReceiveHighServerRpc(transform.rotation, cameraRotation);
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
@@ -95,6 +99,7 @@ public class PlayerInteraction : NetworkBehaviour
                 {
                     Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                     Game.instance.ReceiveLow(transform.rotation, cameraRotation);
+                    AudioManager.instance.PlaySound(clip);
                     ReceiveLowServerRpc(transform.rotation, cameraRotation);
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
