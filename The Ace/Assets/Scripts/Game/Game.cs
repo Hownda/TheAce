@@ -8,6 +8,7 @@ public class Game : NetworkBehaviour
 {
     public GameObject ballPrefab;
     public static Game instance;
+    public GameObject loadingScreen;
 
     [HideInInspector] public GameObject ball;
 
@@ -44,7 +45,6 @@ public class Game : NetworkBehaviour
     public float serveHorizontalForce = 13;
     public float receiveForce = 2;
     public float receiveForceUp = 9.5f;
-
 
     private void Awake()
     {
@@ -100,7 +100,6 @@ public class Game : NetworkBehaviour
         }
         UpdatePlayerToServeServerRpc();
         Debug.Log("Updating Serve");
-        StartCoroutine(prepareServeDelay());
     }
 
     private void SpawnBall()
@@ -473,6 +472,10 @@ public class Game : NetworkBehaviour
                     Debug.Log("Spawn 10");
                 }
             }
+        }
+        if (loadingScreen.activeInHierarchy)
+        {
+            loadingScreen.SetActive(false);
         }
     }
     #endregion
