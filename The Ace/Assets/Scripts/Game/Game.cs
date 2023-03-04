@@ -65,11 +65,6 @@ public class Game : NetworkBehaviour
         {
             canReceive.Value = 0;
         }
-
-        if (team1.Count == 1 && team2.Count == 1)
-        {
-            Debug.Log(team1[0] + " " + team2[0]);
-        }
     }
 
     [ServerRpc] public void StartGameServerRpc()
@@ -79,7 +74,7 @@ public class Game : NetworkBehaviour
 
     [ClientRpc] private void StartGameClientRpc()
     {
-        SpawnBall();
+        ResetBallClientRpc();
         StartCoroutine(SyncPlayerTeams());
         
     }
@@ -92,14 +87,19 @@ public class Game : NetworkBehaviour
         {
             if (player.GetComponent<PlayerNetwork>().teamIndex.Value == 0)
             {
-                team1.Add(player.GetComponent<NetworkObject>().OwnerClientId);
+                if (!team1.Contains(player.GetComponent<NetworkObject>().OwnerClientId))
+                {
+                    team1.Add(player.GetComponent<NetworkObject>().OwnerClientId);
+                }
             }
             else
             {
+                if (!team2.Contains(player.GetComponent<NetworkObject>().OwnerClientId))
                 team2.Add(player.GetComponent<NetworkObject>().OwnerClientId);
             }
         }
         UpdatePlayerToServeServerRpc();
+        Debug.Log("Updating Serve");
         StartCoroutine(prepareServeDelay());
     }
 
@@ -253,7 +253,7 @@ public class Game : NetworkBehaviour
             }
         }
 
-        else if (PhotonNetwork.CurrentRoom.PlayerCount >= 3)
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= 3)
         {
             if (teamToServe.Value == 0)
             {
@@ -262,7 +262,7 @@ public class Game : NetworkBehaviour
                     playerToServe.Value = team1[0];
                 }
 
-                else if (team1.Count == 2 && lastTeamToServe.Value == 1)
+                if (team1.Count == 2 && lastTeamToServe.Value == 1)
                 {
                     for (int i = 0; i < team1.Count; i++)
                     {
@@ -287,9 +287,13 @@ public class Game : NetworkBehaviour
                         }
                     }
                 }
-                else if (team1.Count == 2 && lastTeamToServe.Value == 0)
+                if (team1.Count == 2 && lastTeamToServe.Value == 0 && team1LastPlayerToServe.Value != 2)
                 {
                     playerToServe.Value = team1LastPlayerToServe.Value;
+                }
+                if (team1.Count == 2 && lastTeamToServe.Value == 0 && team1LastPlayerToServe.Value == 2)
+                {
+                    playerToServe.Value = team1[0];
                 }
             }
 
@@ -362,6 +366,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
+                    Debug.Log("Spawn 1");
                 }
                 else
                 {
@@ -371,11 +376,12 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
+                    Debug.Log("Spawn 2");
                 }
             }
             for (int i = 0; i < team2.Count; i++)
             {
-                if (team2[i] == team2LastPlayerToServe.Value)
+                if (team2[i] == team2LastPlayerToServe.Value && team2LastPlayerToServe.Value != 2)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
                     Vector3 moveVector = spawnLocations[2] - player.transform.position;
@@ -383,8 +389,9 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
+                    Debug.Log("Spawn 3");
                 }
-                else if (team2LastPlayerToServe.Value == 2)
+                if (team2LastPlayerToServe.Value == 2)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
                     Vector3 moveVector = spawnLocations[i + 2] - player.transform.position;
@@ -392,8 +399,9 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[i + 2]);
+                    Debug.Log("Spawn 4");
                 }
-                else
+                if (team2[i] != team2LastPlayerToServe.Value && team2LastPlayerToServe.Value != 2)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
                     Vector3 moveVector = spawnLocations[3] - player.transform.position;
@@ -401,6 +409,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
+                    Debug.Log("Spawn 5");
                 }
             }
         }
@@ -418,6 +427,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
+                    Debug.Log("Spawn 6");
                 }
                 else
                 {
@@ -427,6 +437,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
+                    Debug.Log("Spawn 7");
                 }
             }
             for (int i = 0; i < team1.Count; i++)
@@ -439,6 +450,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
+                    Debug.Log("Spawn 8");
                 }
                 else if (team1LastPlayerToServe.Value == 2)
                 {
@@ -448,6 +460,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[i]);
+                    Debug.Log("Spawn 9");
                 }
                 else
                 {
@@ -457,6 +470,7 @@ public class Game : NetworkBehaviour
                     player.GetComponent<CharacterController>().Move(moveVector);
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
+                    Debug.Log("Spawn 10");
                 }
             }
         }

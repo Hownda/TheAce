@@ -2314,7 +2314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96406cd23647a8d4dbac2d7d270311e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isFullscreen: {fileID: 0}
+  isFullscreen: {fileID: 1779837449}
   resolutionDropdown: {fileID: 1658659690}
 --- !u!1 &911413130
 GameObject:
@@ -3692,7 +3692,19 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 861432096}
+        m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
+        m_MethodName: SetFullscreen
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_IsOn: 1
 --- !u!1 &1787121229
 GameObject:
