@@ -9,6 +9,7 @@ public class Options : MonoBehaviour
     public static Options instance;
 
     public GameObject settingsPanel;
+    public GameObject scoreUI;
 
     public bool disableCameraMovement = false;
 
@@ -33,12 +34,13 @@ public class Options : MonoBehaviour
     {
         settingsPanel.SetActive(true);
         optionsPanel.SetActive(false);
+        scoreUI.SetActive(false);
     }
 
     public void OnClickLeave()
     {
         PhotonNetwork.LeaveRoom();
-        SceneManager.LoadScene("Lobby");
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void OnClickQuit()

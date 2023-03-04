@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class SideCollision : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider col)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (col.CompareTag("Ball"))
+        if (collision.gameObject.CompareTag("Ball"))
         {
             // Team 1 side borders
             if (Game.instance.teamLastTouch.Value == 1)

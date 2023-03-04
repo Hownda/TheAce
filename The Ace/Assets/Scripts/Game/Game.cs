@@ -26,8 +26,12 @@ public class Game : NetworkBehaviour
     private NetworkVariable<ulong> team1LastPlayerToServe = new NetworkVariable<ulong>(2);
     private NetworkVariable<ulong> team2LastPlayerToServe = new NetworkVariable<ulong>(2);
     private NetworkVariable<int> lastTeamToServe = new NetworkVariable<int>(0);
-    private NetworkVariable<ulong> playerLastTouch = new NetworkVariable<ulong>();
+    public NetworkVariable<ulong> playerLastTouch = new NetworkVariable<ulong>();
+    public NetworkVariable<ulong> playerPreviousTouch = new NetworkVariable<ulong>(4);
     public NetworkVariable<int> teamLastTouch = new NetworkVariable<int>();
+
+    public NetworkVariable<int> team1Touches = new NetworkVariable<int>(0);
+    public NetworkVariable<int> team2Touches = new NetworkVariable<int>(0);
 
     private List<ulong> team1 = new List<ulong>();
     private List<ulong> team2 = new List<ulong>();
@@ -53,6 +57,12 @@ public class Game : NetworkBehaviour
 
     private void Update()
     {
+        SwitchReceive();
+        CountTouches();
+    }
+
+    private void SwitchReceive()
+    {
         if (ball == null)
         {
             return;
@@ -60,10 +70,52 @@ public class Game : NetworkBehaviour
         if (ball.transform.position.y >= 0.84 && ball.transform.position.z > 0 && teamLastTouch.Value == 0 && ballServed.Value == true)
         {
             canReceive.Value = 1;
+            team1Touches.Value = 0;
         }
         else if (ball.transform.position.y >= 0.84 && ball.transform.position.z < 0 && teamLastTouch.Value == 1 && ballServed.Value == true)
         {
             canReceive.Value = 0;
+            team2Touches.Value = 0;
+        }
+    }
+
+    private void CountTouches()
+    {
+        if (team1.Count == 2)
+        {
+            if (team1Touches.Value > 3)
+            {
+                ScoreServerRpc(1);
+            }
+            if (team1Touches.Value == 2 && playerLastTouch.Value == playerPreviousTouch.Value)
+            {
+                ScoreServerRpc(1);
+            }
+        }
+        if (team1.Count < 2)
+        {
+            if (team1Touches.Value > 2)
+            {
+                ScoreServerRpc(1);
+            }
+        }
+        if (team2.Count == 2)
+        {
+            if (team2Touches.Value > 3)
+            {
+                ScoreServerRpc(0);
+            }
+            if (team2Touches.Value == 2 && playerLastTouch.Value == playerPreviousTouch.Value)
+            {
+                ScoreServerRpc(0);
+            }
+        }
+        if (team2.Count < 2)
+        {
+            if (team2Touches.Value > 2)
+            {
+                ScoreServerRpc(0);
+            }
         }
     }
 
@@ -186,14 +238,17 @@ public class Game : NetworkBehaviour
 
     [ServerRpc(RequireOwnership = false)] public void SetLastTouchServerRpc(ulong clientId)
     {
+        playerPreviousTouch.Value = playerLastTouch.Value;
         playerLastTouch.Value = clientId;
         if (team1.Contains(clientId))
         {
             teamLastTouch.Value = 0;
+            team1Touches.Value += 1;
         }
         else if (team2.Contains(clientId))
         {
             teamLastTouch.Value = 1;
+            team2Touches.Value += 1;
         }
     }   
     
@@ -475,8 +530,14 @@ public class Game : NetworkBehaviour
         }
         if (loadingScreen.activeInHierarchy)
         {
-            loadingScreen.SetActive(false);
+            StartCoroutine(DisableLoadingScreen());
         }
+    }
+
+    private IEnumerator DisableLoadingScreen()
+    {
+        yield return new WaitForSeconds(2);
+        loadingScreen.SetActive(false);
     }
     #endregion
 }

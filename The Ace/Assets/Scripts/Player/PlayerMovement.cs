@@ -6,11 +6,9 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : NetworkBehaviour
 {
-    private PlayerInput playerInput = null;
     private CharacterController controller;
     private Animator animator;
-    InputMaster master;
-    InputMaster.GameplayActions gameplayMovement;
+    private PlayerInput playerInput;
 
     Vector2 horizontalInput;
 
@@ -41,41 +39,32 @@ public class PlayerMovement : NetworkBehaviour
     private Vector3 smoothInputVeloctiy;
     [SerializeField] private float smoothInputSpeed = 0.1f;
 
-    public PlayerInput PlayerInput => playerInput;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
-        master = new InputMaster();
-        gameplayMovement = master.Gameplay;
-
-        gameplayMovement.Movement.performed += ctx => horizontalInput = ctx.ReadValue<Vector2>();
-        gameplayMovement.Jump.performed += _ => JumpInput();
-    }
-
-    private void OnEnable()
-    {
-        master.Enable();
-    }
-
-    private void OnDisable()
-    {
-        master.Disable();
+        playerInput = GetComponent<PlayerInput>();
     }
 
     void Update()
     {
         if (IsOwner && IsClient)
         {
+            Vector2 input = playerInput.actions["Movement"].ReadValue<Vector2>();
+            
+            if (playerInput.actions["Jump"].triggered)
+            {
+                JumpInput();
+            }
+
             isGrounded = Physics.Raycast(transform.position, -transform.up, groundOffset, groundMask);
-            Debug.DrawRay(transform.position, -transform.up);
             if (isGrounded)
             {
                 verticalVelocity.y = 0;
             }
 
-            Vector3 horizontalVelocity = speed * ((transform.right * horizontalInput.x) + (transform.forward * horizontalInput.y));
+            Vector3 horizontalVelocity = speed * ((transform.right * input.x) + (transform.forward * input.y));
             currentInputVector = Vector3.SmoothDamp(currentInputVector, horizontalVelocity, ref smoothInputVeloctiy, smoothInputSpeed);
             controller.Move(currentInputVector * Time.deltaTime);
 

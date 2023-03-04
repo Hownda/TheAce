@@ -10,7 +10,7 @@ public class SettingsManager : MonoBehaviour
 
     #region RESOLUTION
 
-    public TMP_Dropdown resolutionDropdown;
+    public Dropdown resolutionDropdown;
 
     Resolution[] resolutions;
     private void Start()

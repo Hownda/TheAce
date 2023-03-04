@@ -7,6 +7,8 @@ public class PlayerInteraction : NetworkBehaviour
 {
     public float receiveHeight;
     [SerializeField] private AudioClip clip;
+    private float hitCooldown = 0.2f;
+    private float timeStamp;
     private void Update()
     {
         DetectServe();
@@ -14,7 +16,7 @@ public class PlayerInteraction : NetworkBehaviour
 
         // Reset ball (for debugging purposes)
         if (Input.GetKeyDown("r") && IsOwner)
-        {
+        {            
             Game.instance.ResetBallServerRpc();
         }
     }
@@ -39,7 +41,7 @@ public class PlayerInteraction : NetworkBehaviour
                     {
                         Game.instance.ThrowUp();
                         AudioManager.instance.PlaySound(clip);
-                        ThrowUpServerRpc();
+                        ThrowUpServerRpc();                        
                     }
                     Game.instance.SetThrownUpServerRpc(true);
                 }
@@ -54,12 +56,13 @@ public class PlayerInteraction : NetworkBehaviour
                 }
                 else
                 {
-                    if (IsOwner)
+                    if (IsOwner && timeStamp <= Time.time)
                     {
                         Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                         Game.instance.Serve(transform.rotation, cameraRotation);
                         AudioManager.instance.PlaySound(clip);
                         ServeServerRpc(transform.rotation, cameraRotation);
+                        timeStamp = Time.time + hitCooldown;
                     }
 
                     // Makes first collider hit valid
@@ -83,24 +86,26 @@ public class PlayerInteraction : NetworkBehaviour
             // Detect left click
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
-                if (IsOwner && Game.instance.ball.transform.position.y >= receiveHeight)
+                if (IsOwner && Game.instance.ball.transform.position.y >= receiveHeight && timeStamp <= Time.time)
                 {
                     Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                     Game.instance.ReceiveHigh(transform.rotation, cameraRotation);
                     AudioManager.instance.PlaySound(clip);
                     ReceiveHighServerRpc(transform.rotation, cameraRotation);
+                    timeStamp = Time.time + hitCooldown;
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
             }
             // Detect right click
             if (Input.GetKeyDown(KeyCode.Mouse1))
             {
-                if (IsOwner && GetComponent<PlayerMovement>().isGrounded && Game.instance.ball.transform.position.y <= receiveHeight)
+                if (IsOwner && GetComponent<PlayerMovement>().isGrounded && Game.instance.ball.transform.position.y <= receiveHeight && timeStamp <= Time.time)
                 {
                     Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                     Game.instance.ReceiveLow(transform.rotation, cameraRotation);
                     AudioManager.instance.PlaySound(clip);
                     ReceiveLowServerRpc(transform.rotation, cameraRotation);
+                    timeStamp = Time.time + hitCooldown;
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
             }            
