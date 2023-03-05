@@ -54,6 +54,7 @@ public class Options : MonoBehaviour
         {
             optionsPanel.SetActive(false);
             settingsPanel.SetActive(false);
+            scoreUI.SetActive(true);
             disableCameraMovement = false;
             Cursor.lockState = CursorLockMode.Locked;
         }

@@ -8,7 +8,7 @@ public class PlayerMovement : NetworkBehaviour
 {
     private CharacterController controller;
     private Animator animator;
-    private PlayerInput playerInput;
+    private InputMaster gameActions;
 
     Vector2 horizontalInput;
 
@@ -39,24 +39,20 @@ public class PlayerMovement : NetworkBehaviour
     private Vector3 smoothInputVeloctiy;
     [SerializeField] private float smoothInputSpeed = 0.1f;
 
-
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
-        playerInput = GetComponent<PlayerInput>();
+        gameActions = KeybindManager.inputActions;
+        gameActions.Gameplay.Jump.started += JumpInput;
+        gameActions.Gameplay.Enable();
     }
 
     void Update()
     {
         if (IsOwner && IsClient)
         {
-            Vector2 input = playerInput.actions["Movement"].ReadValue<Vector2>();
-            
-            if (playerInput.actions["Jump"].triggered)
-            {
-                JumpInput();
-            }
+            Vector2 input = gameActions.Gameplay.Movement.ReadValue<Vector2>();        
 
             isGrounded = Physics.Raycast(transform.position, -transform.up, groundOffset, groundMask);
             if (isGrounded)
@@ -83,7 +79,7 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    private void JumpInput()
+    private void JumpInput(InputAction.CallbackContext obj)
     {
         jump = true;
     }
