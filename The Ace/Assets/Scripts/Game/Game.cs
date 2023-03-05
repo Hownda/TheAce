@@ -210,6 +210,8 @@ public class Game : NetworkBehaviour
                 scoreTeam2.Value += 1;
             }
             StartCoroutine(ballResetDelay());
+            team1Touches.Value = 0;
+            team2Touches.Value = 0;
         }       
     }
 

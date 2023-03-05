@@ -2,13 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.UI;
 
 public class PlayerInteraction : NetworkBehaviour
 {
     public float receiveHeight;
     [SerializeField] private AudioClip clip;
-    private float hitCooldown = 0.2f;
-    private float timeStamp;
+
+    public Slider hitSlider;
+    private float currentTime;
+    private float hitCooldown = 0.5f;
+
     private void Update()
     {
         DetectServe();
@@ -19,6 +23,15 @@ public class PlayerInteraction : NetworkBehaviour
         {            
             Game.instance.ResetBallServerRpc();
         }
+        if (IsOwner) {
+            currentTime += Time.deltaTime;
+            currentTime = Mathf.Clamp(currentTime, 0.0f, hitCooldown);
+            hitSlider.value = currentTime / hitCooldown;
+        }
+        else
+        {
+            hitSlider.gameObject.SetActive(false);
+        }
     }
     private void DetectServe()
     {   if (Game.instance.ball == null)
@@ -26,7 +39,7 @@ public class PlayerInteraction : NetworkBehaviour
             return;
         }
 
-        if (Vector3.Distance(transform.position, Game.instance.ball.transform.position) <= 2 && OwnerClientId == Game.instance.playerToServe.Value)
+        if (Vector3.Distance(transform.position, Game.instance.ball.transform.position) <= 2 && OwnerClientId == Game.instance.playerToServe.Value && IsOwner)
         {
             // Right Mouse Button        
             if (Input.GetKeyDown(KeyCode.Mouse1))
@@ -37,13 +50,11 @@ public class PlayerInteraction : NetworkBehaviour
                 }
                 else
                 {
-                    if (IsOwner)
-                    {
-                        Game.instance.ThrowUp();
-                        AudioManager.instance.PlaySound(clip);
-                        ThrowUpServerRpc();                        
-                    }
+                    Game.instance.ThrowUp();
+                    AudioManager.instance.PlaySound(clip);
+                    ThrowUpServerRpc();
                     Game.instance.SetThrownUpServerRpc(true);
+                    
                 }
             }
 
@@ -56,19 +67,18 @@ public class PlayerInteraction : NetworkBehaviour
                 }
                 else
                 {
-                    if (IsOwner && timeStamp <= Time.time)
+                    if (currentTime >= hitCooldown)
                     {
                         Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                         Game.instance.Serve(transform.rotation, cameraRotation);
                         AudioManager.instance.PlaySound(clip);
                         ServeServerRpc(transform.rotation, cameraRotation);
-                        timeStamp = Time.time + hitCooldown;
-                    }
+                        currentTime = 0;
 
-                    // Makes first collider hit valid
-                    Game.instance.SetBallServedServerRpc(true);
-                    Game.instance.SetValidPointServerRpc(true);
-                    Game.instance.SetLastTouchServerRpc(OwnerClientId);
+                        Game.instance.SetBallServedServerRpc(true);
+                        Game.instance.SetValidPointServerRpc(true);
+                        Game.instance.SetLastTouchServerRpc(OwnerClientId);
+                    }              
                 }
             }
         }
@@ -86,26 +96,26 @@ public class PlayerInteraction : NetworkBehaviour
             // Detect left click
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
-                if (IsOwner && Game.instance.ball.transform.position.y >= receiveHeight && timeStamp <= Time.time)
+                if (IsOwner && Game.instance.ball.transform.position.y >= receiveHeight /*&& timeStamp <= Time.time*/)
                 {
                     Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                     Game.instance.ReceiveHigh(transform.rotation, cameraRotation);
                     AudioManager.instance.PlaySound(clip);
                     ReceiveHighServerRpc(transform.rotation, cameraRotation);
-                    timeStamp = Time.time + hitCooldown;
+                    //timeStamp = Time.time + hitCooldown;
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
             }
             // Detect right click
             if (Input.GetKeyDown(KeyCode.Mouse1))
             {
-                if (IsOwner && GetComponent<PlayerMovement>().isGrounded && Game.instance.ball.transform.position.y <= receiveHeight && timeStamp <= Time.time)
+                if (IsOwner && GetComponent<PlayerMovement>().isGrounded && Game.instance.ball.transform.position.y <= receiveHeight /*&& timeStamp <= Time.time*/)
                 {
                     Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
                     Game.instance.ReceiveLow(transform.rotation, cameraRotation);
                     AudioManager.instance.PlaySound(clip);
                     ReceiveLowServerRpc(transform.rotation, cameraRotation);
-                    timeStamp = Time.time + hitCooldown;
+                    //timeStamp = Time.time + hitCooldown;
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
             }            
