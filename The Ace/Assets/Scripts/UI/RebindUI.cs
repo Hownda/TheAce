@@ -43,12 +43,18 @@ public class RebindUI : MonoBehaviour
 
         if (inputActionReference != null)
         {
-            KeybindManager.LoadBindingOverride(actionName);
+            LoadOverride();
             GetBindingInfo();
             UpdateUI();
         }
 
         KeybindManager.rebindComplete += UpdateUI;
+    }
+
+    private IEnumerator LoadOverride()
+    {
+        yield return new WaitForSeconds(0.2f);
+        KeybindManager.LoadBindingOverride(actionName);
     }
 
     private void OnDisable()

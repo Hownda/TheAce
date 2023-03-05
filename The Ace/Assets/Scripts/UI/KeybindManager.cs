@@ -109,6 +109,10 @@ public class KeybindManager : MonoBehaviour
         {
             inputActions = new InputMaster();
         }
+        if (inputActions.asset.FindAction(actionName) == null)
+        {
+            return;
+        }
         InputAction action = inputActions.asset.FindAction(actionName);
 
         for (int i = 0; i < action.bindings.Count; i++)

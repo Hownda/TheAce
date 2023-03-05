@@ -40,7 +40,6 @@ public class SettingsManager : MonoBehaviour
     {
         Resolution resolution = resolutions[resolutionDropdown.value];
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-        Debug.Log(resolutionDropdown.value);
     }
 
     #endregion
