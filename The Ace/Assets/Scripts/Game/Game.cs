@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 using Photon.Pun;
+using UnityEngine.UI;
 
 public class Game : NetworkBehaviour
 {
@@ -32,6 +33,8 @@ public class Game : NetworkBehaviour
 
     public NetworkVariable<int> team1Touches = new NetworkVariable<int>(0);
     public NetworkVariable<int> team2Touches = new NetworkVariable<int>(0);
+
+    public NetworkVariable<bool> playersReady = new NetworkVariable<bool>(false);
 
     private List<ulong> team1 = new List<ulong>();
     private List<ulong> team2 = new List<ulong>();
@@ -259,6 +262,11 @@ public class Game : NetworkBehaviour
         canReceive.Value = canReceiveValue;
     }
 
+    [ServerRpc(RequireOwnership = false)] private void SetPlayersReadyServerRpc(bool playersReadyValue)
+    {
+        playersReady.Value = playersReadyValue;
+    }
+
     public void ThrowUp()
     {
         ball.GetComponent<Rigidbody>().isKinematic = false;
@@ -420,6 +428,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[0] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[0])
+                    {
+                        moveVector = spawnLocations[0] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
                     Debug.Log("Spawn 1");
@@ -430,6 +446,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[1] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[1])
+                    {
+                        moveVector = spawnLocations[1] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
                     Debug.Log("Spawn 2");
@@ -443,6 +467,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[2] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[2])
+                    {
+                        moveVector = spawnLocations[2] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
                     Debug.Log("Spawn 3");
@@ -453,6 +485,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[i + 2] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[i + 2])
+                    {
+                        moveVector = spawnLocations[i + 2] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[i + 2]);
                     Debug.Log("Spawn 4");
@@ -463,6 +503,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[3] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[3])
+                    {
+                        moveVector = spawnLocations[3] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
                     Debug.Log("Spawn 5");
@@ -481,6 +529,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[2] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[2])
+                    {
+                        moveVector = spawnLocations[2] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
                     Debug.Log("Spawn 6");
@@ -491,6 +547,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[3] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[3])
+                    {
+                        moveVector = spawnLocations[3] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
                     Debug.Log("Spawn 7");
@@ -504,6 +568,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[0] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[0])
+                    {
+                        moveVector = spawnLocations[0] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
                     Debug.Log("Spawn 8");
@@ -514,6 +586,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[i] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[i])
+                    {
+                        moveVector = spawnLocations[i] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[i]);
                     Debug.Log("Spawn 9");
@@ -524,6 +604,14 @@ public class Game : NetworkBehaviour
                     Vector3 moveVector = spawnLocations[1] - player.transform.position;
                     player.GetComponent<CharacterController>().detectCollisions = false;
                     player.GetComponent<CharacterController>().Move(moveVector);
+
+                    if (player.transform.position != spawnLocations[1])
+                    {
+                        moveVector = spawnLocations[1] - player.transform.position;
+                        player.GetComponent<CharacterController>().Move(moveVector);
+
+                    }
+
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
                     Debug.Log("Spawn 10");
@@ -540,6 +628,8 @@ public class Game : NetworkBehaviour
     {
         yield return new WaitForSeconds(2);
         loadingScreen.SetActive(false);
+        SetPlayersReadyServerRpc(true);
+
     }
     #endregion
 }
