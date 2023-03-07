@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
@@ -11,6 +12,17 @@ public class MenuManager : MonoBehaviour
 
     [Header("Main Scene")]
     public GameObject pausePanel;
+
+    [Header("Error")]
+    public GameObject errorPanel;
+    public Text errorNum, errorDetails;
+    public Button errorButton;
+    private int activeError;
+
+    private void Awake()
+    {
+        GetData();
+    }
 
     // Main Menu 
     public void OnClickPlay()
@@ -40,6 +52,36 @@ public class MenuManager : MonoBehaviour
     {
         pausePanel.SetActive(toggle);
         Cursor.visible = toggle;
+    }
+
+    void GetData()
+    {
+        // TODO Data request
+    }
+
+    void OnError(int code)
+    {
+        activeError = code;
+
+        switch (code)
+        {
+            case 2005:
+                errorNum.text = "Error <color=red>" + code.ToString() + "</color>";
+                errorDetails.text = "Version " + Application.version.ToString() + " is out of date. " +
+                                    "Please update the game.";
+                errorButton.GetComponentInChildren<Text>().text = "Launcher";
+                break;
+        }
+    }
+
+    public void ErrorButton()
+    {
+        switch (activeError)
+        {
+            case 2005:
+                // TODO Open Launcher
+                break;
+        }
     }
 
 }
