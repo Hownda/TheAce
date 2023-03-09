@@ -46,12 +46,11 @@ public class Game : NetworkBehaviour
     public Vector3 team2ServeLocation = new Vector3(-3.8f, 1.1f, 8.7f);
     public Vector3 team1ServeLocation = new Vector3(3.8f, 1.1f, -8.7f);
 
-    [Header("Physics")]
-    public int throwUpForce = 350;
-    public float serveVerticalForce = 20;
-    public float serveHorizontalForce = 13;
-    public float receiveForce = 2;
-    public float receiveForceUp = 9.5f;
+    private int throwUpForce = 350;
+    private float serveVerticalForce = 8;
+    private float serveHorizontalForce = 7;
+    private float receiveForce = 2;
+    private float receiveForceUp = 8.5f;
 
     private void Awake()
     {
@@ -61,7 +60,7 @@ public class Game : NetworkBehaviour
     private void Update()
     {
         SwitchReceive();
-        CountTouches();
+        //CountTouches();
     }
 
     private void SwitchReceive()
@@ -82,7 +81,7 @@ public class Game : NetworkBehaviour
         }
     }
 
-    private void CountTouches()
+    /*private void CountTouches()
     {
         if (team1.Count == 2)
         {
@@ -120,7 +119,7 @@ public class Game : NetworkBehaviour
                 ScoreServerRpc(0);
             }
         }
-    }
+    }*/
 
     [ServerRpc] public void StartGameServerRpc()
     {
@@ -274,27 +273,22 @@ public class Game : NetworkBehaviour
         ball.GetComponent<Rigidbody>().AddForce(new Vector3(0, throwUpForce, 0));
     }
 
-    public void Serve(Quaternion playerRotation, Quaternion cameraRotation)
+    public void Serve(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
-        Vector3 playerRotationDirection = playerRotation * Vector3.forward;
-        Vector3 cameraRotationDirection = cameraRotation * Vector3.up;
-        Vector3 addedForce = playerRotationDirection * serveHorizontalForce + serveVerticalForce * cameraRotationDirection * -cameraRotation.x;
+        Vector3 addedForce = playerShootDirection * serveHorizontalForce + serveVerticalForce * cameraDirection;
 
         ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        ball.GetComponent<Rigidbody>().AddForce(addedForce, ForceMode.Impulse);              
+        ball.GetComponent<Rigidbody>().AddForce(addedForce, ForceMode.Impulse);
     }
 
-    public void ReceiveHigh(Quaternion playerRotation, Quaternion cameraRotation)
+    public void ReceiveHigh(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
-        Serve(playerRotation, cameraRotation);     
+        Serve(playerShootDirection, cameraDirection);     
     }
 
-    public void ReceiveLow(Quaternion playerRotation, Quaternion cameraRotation)
+    public void ReceiveLow(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
-
-        Vector3 playerRotationDirection = playerRotation * Vector3.forward;
-        Vector3 cameraRotationDirection = cameraRotation * Vector3.up;
-        Vector3 forceToAdd = playerRotationDirection * receiveForce + receiveForceUp * Vector3.up;
+        Vector3 forceToAdd = playerShootDirection * receiveForce + receiveForceUp * Vector3.up;
 
         ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
         ball.GetComponent<Rigidbody>().AddForce(forceToAdd, ForceMode.Impulse);

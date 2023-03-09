@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6382658652635061578}
   - component: {fileID: 8247827703110224174}
   - component: {fileID: 2249248911713556869}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: volleyball
   m_TagString: Ball
   m_Icon: {fileID: 0}

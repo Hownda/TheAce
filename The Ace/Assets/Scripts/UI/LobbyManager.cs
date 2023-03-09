@@ -327,6 +327,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public void MainMenu()
     {
         SceneManager.LoadScene("MainMenu");
+        PhotonNetwork.Disconnect();
     }
 
 

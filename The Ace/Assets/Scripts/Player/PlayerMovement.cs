@@ -52,7 +52,30 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (IsOwner && IsClient)
         {
-            Vector2 input = gameActions.Gameplay.Movement.ReadValue<Vector2>();        
+            Vector2 input = gameActions.Gameplay.Movement.ReadValue<Vector2>();
+
+            if (input.y > 0 || input.y > 0 && input.x != 0 || input.y > 0 && input.x == 0)
+            {
+                animator.SetInteger("WalkVertical", 1);
+            }
+            else if (input.y < 0 || input.y < 0 && input.x != 0 || input.y > 0 && input.x == 0)
+            {
+                animator.SetInteger("WalkVertical", -1);
+            }
+            else if (input.y == 0 && input.x == 0)
+            {
+                animator.SetInteger("WalkVertical", 0);
+                animator.SetInteger("WalkHorizontal", 0);
+            }
+            else if (input.x > 0 && input.y == 0)
+            {
+                animator.SetInteger("WalkHorizontal", 1);
+            }
+            else if (input.x < 0 && input.y == 0)
+            {
+                animator.SetInteger("WalkHorizontal", -1);
+            }
+
 
             isGrounded = Physics.Raycast(transform.position, -transform.up, groundOffset, groundMask);
             if (isGrounded)

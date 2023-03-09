@@ -44,7 +44,7 @@ public class PlayerInteraction : NetworkBehaviour
             return;
         }
 
-        if (Vector3.Distance(transform.position, Game.instance.ball.transform.position) <= 2 && OwnerClientId == Game.instance.playerToServe.Value && IsOwner && Game.instance.playersReady.Value)
+        if (Vector3.Distance(transform.position, Game.instance.ball.transform.position) <= 2.3f && OwnerClientId == Game.instance.playerToServe.Value && IsOwner && Game.instance.playersReady.Value)
         {
             // Right Mouse Button        
             if (Input.GetKeyDown(KeyCode.Mouse1))
@@ -74,10 +74,10 @@ public class PlayerInteraction : NetworkBehaviour
                 {
                     if (currentTime >= hitCooldown)
                     {
-                        Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
-                        Game.instance.Serve(transform.rotation, cameraRotation);
+                        Vector3 cameraDirection = GetComponentInChildren<Camera>().transform.forward;
+                        Game.instance.Serve(transform.forward, cameraDirection);
                         AudioManager.instance.PlaySound(clip);
-                        ServeServerRpc(transform.rotation, cameraRotation);
+                        ServeServerRpc(transform.forward, cameraDirection);
                         currentTime = 0;
 
                         Game.instance.SetBallServedServerRpc(true);
@@ -103,10 +103,10 @@ public class PlayerInteraction : NetworkBehaviour
             {
                 if (IsOwner && Game.instance.ball.transform.position.y >= receiveHeight && currentTime >= hitCooldown)
                 {
-                    Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
-                    Game.instance.ReceiveHigh(transform.rotation, cameraRotation);
+                    Vector3 cameraDirection = GetComponentInChildren<Camera>().transform.forward;
+                    Game.instance.ReceiveHigh(transform.forward, cameraDirection);
                     AudioManager.instance.PlaySound(clip);
-                    ReceiveHighServerRpc(transform.rotation, cameraRotation);
+                    ReceiveHighServerRpc(transform.forward, cameraDirection);
                     currentTime = 0;
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
@@ -116,10 +116,10 @@ public class PlayerInteraction : NetworkBehaviour
             {
                 if (IsOwner && GetComponent<PlayerMovement>().isGrounded && Game.instance.ball.transform.position.y <= receiveHeight && currentTime >= hitCooldown)
                 {
-                    Quaternion cameraRotation = GetComponentInChildren<Camera>().transform.localRotation;
-                    Game.instance.ReceiveLow(transform.rotation, cameraRotation);
+                    Vector3 cameraDirection = GetComponentInChildren<Camera>().transform.forward;
+                    Game.instance.ReceiveLow(transform.forward, cameraDirection);
                     AudioManager.instance.PlaySound(clip);
-                    ReceiveLowServerRpc(transform.rotation, cameraRotation);
+                    ReceiveLowServerRpc(transform.forward, cameraDirection);
                     currentTime = 0;
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
@@ -142,42 +142,42 @@ public class PlayerInteraction : NetworkBehaviour
         }
     }
 
-    [ServerRpc] public void ServeServerRpc(Quaternion playerRotation, Quaternion cameraRotation)
+    [ServerRpc] public void ServeServerRpc(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
-        ServeClientRpc(playerRotation, cameraRotation);
+        ServeClientRpc(playerShootDirection, cameraDirection);
     }
 
-    [ClientRpc] private void ServeClientRpc(Quaternion playerRotation, Quaternion cameraRotation)
+    [ClientRpc] private void ServeClientRpc(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
         if (!IsOwner)
         {
-            Game.instance.Serve(playerRotation, cameraRotation);
+            Game.instance.Serve(playerShootDirection, cameraDirection);
         }
     }
 
-    [ServerRpc] private void ReceiveHighServerRpc(Quaternion playerRotation, Quaternion cameraRotation)
+    [ServerRpc] private void ReceiveHighServerRpc(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
-        ReceiveHighClientRpc(playerRotation, cameraRotation);
+        ReceiveHighClientRpc(playerShootDirection, cameraDirection);
     }
 
-    [ClientRpc] private void ReceiveHighClientRpc(Quaternion playerRotation, Quaternion cameraRotation)
+    [ClientRpc] private void ReceiveHighClientRpc(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
         if (!IsOwner)
         {
-            Game.instance.ReceiveHigh(playerRotation, cameraRotation);
+            Game.instance.ReceiveHigh(playerShootDirection, cameraDirection);
         }
     }
 
-    [ServerRpc] private void ReceiveLowServerRpc(Quaternion playerRotation, Quaternion cameraRotation)
+    [ServerRpc] private void ReceiveLowServerRpc(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
-        ReceiveLowClientRpc(playerRotation, cameraRotation);
+        ReceiveLowClientRpc(playerShootDirection, cameraDirection);
     }
 
-    [ClientRpc] private void ReceiveLowClientRpc(Quaternion playerRotation, Quaternion cameraRotation)
+    [ClientRpc] private void ReceiveLowClientRpc(Vector3 playerShootDirection, Vector3 cameraDirection)
     {
         if (!IsOwner)
         {
-            Game.instance.ReceiveLow(playerRotation, cameraRotation);
+            Game.instance.ReceiveLow(playerShootDirection, cameraDirection);
         }
     }
 }
