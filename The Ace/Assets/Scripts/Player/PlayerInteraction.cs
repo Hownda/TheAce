@@ -8,11 +8,17 @@ public class PlayerInteraction : NetworkBehaviour
 {
     public float receiveHeight;
     [SerializeField] private AudioClip clip;
+    private Animator animator;
 
     public Slider hitSlider;
     private float currentTime;
     private float hitCooldown = 0.5f;
 
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
     private void Update()
     {
         DetectServe();
@@ -83,6 +89,7 @@ public class PlayerInteraction : NetworkBehaviour
                         Game.instance.SetBallServedServerRpc(true);
                         Game.instance.SetValidPointServerRpc(true);
                         Game.instance.SetLastTouchServerRpc(OwnerClientId);
+                        Game.instance.SetLastPlayerToServeServerRpc(OwnerClientId);
                     }              
                 }
             }
@@ -96,8 +103,8 @@ public class PlayerInteraction : NetworkBehaviour
             return;
         }
 
-        if (Vector3.Distance(transform.position, Game.instance.ball.transform.position) <= 2 && Game.instance.ballServed.Value == true && GetComponent<PlayerNetwork>().teamIndex.Value == Game.instance.canReceive.Value )
-        {
+        if (Vector3.Distance(transform.position, Game.instance.ball.transform.position) <= 2.3f && Game.instance.ballServed.Value == true && GetComponent<PlayerNetwork>().teamIndex.Value == Game.instance.canReceive.Value )
+        {      
             // Detect left click
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
@@ -108,6 +115,8 @@ public class PlayerInteraction : NetworkBehaviour
                     AudioManager.instance.PlaySound(clip);
                     ReceiveHighServerRpc(transform.forward, cameraDirection);
                     currentTime = 0;
+
+                    animator.SetTrigger("Receive");
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
             }
@@ -121,6 +130,9 @@ public class PlayerInteraction : NetworkBehaviour
                     AudioManager.instance.PlaySound(clip);
                     ReceiveLowServerRpc(transform.forward, cameraDirection);
                     currentTime = 0;
+
+                    animator.SetTrigger("Receive");
+                    AnimateReceiveServerRpc();
                 }
                 Game.instance.SetLastTouchServerRpc(OwnerClientId);
             }            
@@ -178,6 +190,19 @@ public class PlayerInteraction : NetworkBehaviour
         if (!IsOwner)
         {
             Game.instance.ReceiveLow(playerShootDirection, cameraDirection);
+        }
+    }
+
+    [ServerRpc] private void AnimateReceiveServerRpc()
+    {
+        AnimateReceiveClientRpc();
+    }
+
+    [ClientRpc] private void AnimateReceiveClientRpc()
+    {
+        if (!IsOwner)
+        {
+            animator.SetTrigger("Receive");
         }
     }
 }

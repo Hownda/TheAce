@@ -50,30 +50,35 @@ public class PlayerMovement : NetworkBehaviour
 
     void Update()
     {
-        if (IsOwner && IsClient)
+        if (IsOwner)
         {
             Vector2 input = gameActions.Gameplay.Movement.ReadValue<Vector2>();
 
             if (input.y > 0 || input.y > 0 && input.x != 0 || input.y > 0 && input.x == 0)
             {
                 animator.SetInteger("WalkVertical", 1);
+                AnimateServerRpc(1, 0);
             }
             else if (input.y < 0 || input.y < 0 && input.x != 0 || input.y > 0 && input.x == 0)
             {
                 animator.SetInteger("WalkVertical", -1);
+                AnimateServerRpc(-1, 0);
             }
             else if (input.y == 0 && input.x == 0)
             {
                 animator.SetInteger("WalkVertical", 0);
                 animator.SetInteger("WalkHorizontal", 0);
+                AnimateServerRpc(0, 0);
             }
             else if (input.x > 0 && input.y == 0)
             {
                 animator.SetInteger("WalkHorizontal", 1);
+                AnimateServerRpc(0, 1);
             }
             else if (input.x < 0 && input.y == 0)
             {
                 animator.SetInteger("WalkHorizontal", -1);
+                AnimateServerRpc(0, -1);
             }
 
 
@@ -105,5 +110,19 @@ public class PlayerMovement : NetworkBehaviour
     private void JumpInput(InputAction.CallbackContext obj)
     {
         jump = true;
+    }
+
+    [ServerRpc] private void AnimateServerRpc(int verticalValue, int horizontalValue)
+    {
+        AnimateClientRpc(verticalValue, horizontalValue);
+    }
+
+    [ClientRpc] private void AnimateClientRpc(int verticalValue, int horizontalValue)
+    {
+        if (!IsOwner)
+        {
+            animator.SetInteger("WalkVertical", verticalValue);
+            animator.SetInteger("WalkHorizontal", horizontalValue);
+        }
     }
 }

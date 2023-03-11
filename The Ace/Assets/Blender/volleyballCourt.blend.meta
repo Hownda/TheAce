@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: DarkGray
+    second: {fileID: 2100000, guid: 315b9189e0958a649a8d1f749ce36076, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: DarkGreen
     second: {fileID: 2100000, guid: a9754e33fa75b6b498ad8125f9bfaa00, type: 2}
   - first:
@@ -14,6 +19,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: DarkRed
     second: {fileID: 2100000, guid: 5d24ccc1ae897ee4f9df7a25c86e18aa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LightGray
+    second: {fileID: 2100000, guid: 315b9189e0958a649a8d1f749ce36076, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

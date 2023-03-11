@@ -24,8 +24,8 @@ public class Game : NetworkBehaviour
     public NetworkVariable<int> scoreTeam1 = new NetworkVariable<int>(0);
     public NetworkVariable<int> scoreTeam2 = new NetworkVariable<int>(0);
 
-    private NetworkVariable<ulong> team1LastPlayerToServe = new NetworkVariable<ulong>(2);
-    private NetworkVariable<ulong> team2LastPlayerToServe = new NetworkVariable<ulong>(2);
+    public NetworkVariable<ulong> team1LastPlayerToServe = new NetworkVariable<ulong>(4);
+    public NetworkVariable<ulong> team2LastPlayerToServe = new NetworkVariable<ulong>(4);
     private NetworkVariable<int> lastTeamToServe = new NetworkVariable<int>(0);
     public NetworkVariable<ulong> playerLastTouch = new NetworkVariable<ulong>();
     public NetworkVariable<ulong> playerPreviousTouch = new NetworkVariable<ulong>(4);
@@ -49,7 +49,7 @@ public class Game : NetworkBehaviour
     private int throwUpForce = 350;
     private float serveVerticalForce = 8;
     private float serveHorizontalForce = 7;
-    private float receiveForce = 2;
+    private float receiveForce = 1;
     private float receiveForceUp = 8.5f;
 
     private void Awake()
@@ -266,6 +266,18 @@ public class Game : NetworkBehaviour
         playersReady.Value = playersReadyValue;
     }
 
+    [ServerRpc(RequireOwnership = false)] public void SetLastPlayerToServeServerRpc(ulong clientId)
+    {
+        if (team1.Contains(clientId))
+        {
+            team1LastPlayerToServe.Value = clientId;
+        }
+        if (team2.Contains(clientId))
+        {
+            team2LastPlayerToServe.Value = clientId;
+        }
+    }
+
     public void ThrowUp()
     {
         ball.GetComponent<Rigidbody>().isKinematic = false;
@@ -298,7 +310,6 @@ public class Game : NetworkBehaviour
     [ServerRpc]
     public void UpdatePlayerToServeServerRpc()
     {
-
         if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
         {
             if (teamToServe.Value == 0)
@@ -329,27 +340,23 @@ public class Game : NetworkBehaviour
                             if (i == 1)
                             {
                                 playerToServe.Value = team1[0];
-                                team1LastPlayerToServe.Value = team1[0];
                             }
-                            else
+                            if (i == 0)
                             {
                                 playerToServe.Value = team1[1];
-                                team1LastPlayerToServe.Value = team1[1];
                             }
                         }
-
-                        else
+                        if (team1LastPlayerToServe.Value == 4)
                         {
                             playerToServe.Value = team1[0];
-                            team1LastPlayerToServe.Value = team1[0];
                         }
                     }
                 }
-                if (team1.Count == 2 && lastTeamToServe.Value == 0 && team1LastPlayerToServe.Value != 2)
+                if (team1.Count == 2 && lastTeamToServe.Value == 0 && team1LastPlayerToServe.Value != 4)
                 {
                     playerToServe.Value = team1LastPlayerToServe.Value;
                 }
-                if (team1.Count == 2 && lastTeamToServe.Value == 0 && team1LastPlayerToServe.Value == 2)
+                if (team1.Count == 2 && lastTeamToServe.Value == 0 && team1LastPlayerToServe.Value == 4)
                 {
                     playerToServe.Value = team1[0];
                 }
@@ -371,19 +378,16 @@ public class Game : NetworkBehaviour
                             if (i == 1)
                             {
                                 playerToServe.Value = team2[0];
-                                team2LastPlayerToServe.Value = team2[0];
                             }
                             else if (i == 0)
                             {
                                 playerToServe.Value = team2[1];
-                                team2LastPlayerToServe.Value = team2[1];
                             }
                         }
 
-                        else
+                        if (team2LastPlayerToServe.Value == 4)
                         {
                             playerToServe.Value = team2[0];
-                            team2LastPlayerToServe.Value = team2[0];
                         }
                     }
                 }
@@ -432,7 +436,6 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
-                    Debug.Log("Spawn 1");
                 }
                 else
                 {
@@ -450,12 +453,11 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
-                    Debug.Log("Spawn 2");
                 }
             }
             for (int i = 0; i < team2.Count; i++)
             {
-                if (team2[i] == team2LastPlayerToServe.Value && team2LastPlayerToServe.Value != 2)
+                if (team2[i] == team2LastPlayerToServe.Value && team2LastPlayerToServe.Value != 4)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
                     Vector3 moveVector = spawnLocations[2] - player.transform.position;
@@ -471,9 +473,8 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
-                    Debug.Log("Spawn 3");
                 }
-                if (team2LastPlayerToServe.Value == 2)
+                if (team2LastPlayerToServe.Value == 4)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
                     Vector3 moveVector = spawnLocations[i + 2] - player.transform.position;
@@ -489,9 +490,8 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[i + 2]);
-                    Debug.Log("Spawn 4");
                 }
-                if (team2[i] != team2LastPlayerToServe.Value && team2LastPlayerToServe.Value != 2)
+                if (team2[i] != team2LastPlayerToServe.Value && team2LastPlayerToServe.Value != 4)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team2[i]];
                     Vector3 moveVector = spawnLocations[3] - player.transform.position;
@@ -507,7 +507,6 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
-                    Debug.Log("Spawn 5");
                 }
             }
         }
@@ -533,7 +532,6 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[2]);
-                    Debug.Log("Spawn 6");
                 }
                 else
                 {
@@ -551,12 +549,11 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[3]);
-                    Debug.Log("Spawn 7");
                 }
             }
             for (int i = 0; i < team1.Count; i++)
             {
-                if (team1[i] == team1LastPlayerToServe.Value)
+                if (team1[i] == team1LastPlayerToServe.Value && team1LastPlayerToServe.Value != 4)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
                     Vector3 moveVector = spawnLocations[0] - player.transform.position;
@@ -572,9 +569,8 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[0]);
-                    Debug.Log("Spawn 8");
                 }
-                else if (team1LastPlayerToServe.Value == 2)
+                if (team1LastPlayerToServe.Value == 4)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
                     Vector3 moveVector = spawnLocations[i] - player.transform.position;
@@ -590,9 +586,8 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[i]);
-                    Debug.Log("Spawn 9");
                 }
-                else
+                if (team1[i] != team1LastPlayerToServe.Value && team1LastPlayerToServe.Value != 4)
                 {
                     GameObject player = PlayerDictionary.instance.playerDictionary[team1[i]];
                     Vector3 moveVector = spawnLocations[1] - player.transform.position;
@@ -608,7 +603,6 @@ public class Game : NetworkBehaviour
 
                     player.GetComponent<CharacterController>().detectCollisions = true;
                     player.transform.rotation = Quaternion.Euler(spawnRotations[1]);
-                    Debug.Log("Spawn 10");
                 }
             }
         }
