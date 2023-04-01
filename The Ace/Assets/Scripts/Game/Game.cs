@@ -81,6 +81,8 @@ public class Game : NetworkBehaviour
         }
     }
 
+
+
     /*private void CountTouches()
     {
         if (team1.Count == 2)
